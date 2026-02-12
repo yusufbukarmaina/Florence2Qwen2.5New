@@ -55,21 +55,21 @@ class Config:
 
     MAX_IMAGE_SIZE = 512
 
-    FLORENCE_LR = 2e-5  # Was 1e-4 (5x lower)
-    QWEN_LR = 1e-5      # Was 3e-5 (3x lower)
-    # LoRA
+    # LoRA (shared)
     LORA_R = 16         # Was 32 (half the size)
     LORA_ALPHA = 32     # Was 64
     LORA_DROPOUT = 0.1  # Was 0.15
+    LORA_TARGET_MODULES = ["q_proj", "k_proj", "v_proj", "o_proj"]
 
     BATCH_SIZE = 1
     GRADIENT_ACCUMULATION = 16
 
-    # ✅ safer LR
-    
+    FLORENCE_LR = 2e-5  # Was 1e-4 (5x lower)
+    QWEN_LR = 1e-5      # Was 3e-5 (3x lower)
+    WEIGHT_DECAY = 0.03
 
     NUM_EPOCHS = 15
-    WARMUP_STEPS = 50
+    WARMUP_RATIO = 0.1
     MAX_LENGTH = 256
 
     FP16 = True
@@ -80,9 +80,7 @@ class Config:
     EVAL_STEPS = 200
     LOGGING_STEPS = 25
 
-    # volume sanity range
     MAX_VOLUME_ML = 250
-
 
 # =============================================================================
 # HELPERS
@@ -999,5 +997,6 @@ if __name__ == "__main__":
         print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
+
 
 
