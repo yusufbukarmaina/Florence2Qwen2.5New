@@ -483,8 +483,8 @@ class FlorenceTrainer:
             num_train_epochs=cfg.NUM_EPOCHS,
             per_device_train_batch_size=cfg.BATCH_SIZE,
             gradient_accumulation_steps=cfg.GRADIENT_ACCUMULATION,
-            learning_rate=cfg.LEARNING_RATE,
-            warmup_steps=cfg.WARMUP_STEPS,
+            learning_rate=cfg.FLORENCE_LR,
+            warmup_ratio=cfg.WARMUP_RATIO,
             logging_steps=cfg.LOGGING_STEPS,
             save_steps=cfg.SAVE_STEPS,
             eval_steps=cfg.EVAL_STEPS,
@@ -676,8 +676,8 @@ class QwenTrainer:
             num_train_epochs=cfg.NUM_EPOCHS,
             per_device_train_batch_size=cfg.BATCH_SIZE,
             gradient_accumulation_steps=cfg.GRADIENT_ACCUMULATION,
-            learning_rate=cfg.LEARNING_RATE,
-            warmup_steps=cfg.WARMUP_STEPS,
+            learning_rate=cfg.QWEN_LR,
+            warmup_ratio=cfg.WARMUP_RATIO,
             logging_steps=cfg.LOGGING_STEPS,
             save_steps=cfg.SAVE_STEPS,
             eval_steps=cfg.EVAL_STEPS,
@@ -997,6 +997,7 @@ if __name__ == "__main__":
         print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
+
 
 
 
