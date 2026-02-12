@@ -55,19 +55,20 @@ class Config:
 
     MAX_IMAGE_SIZE = 512
 
+    FLORENCE_LR = 2e-5  # Was 1e-4 (5x lower)
+    QWEN_LR = 1e-5      # Was 3e-5 (3x lower)
     # LoRA
-    LORA_R = 8
-    LORA_ALPHA = 16
-    LORA_DROPOUT = 0.05
-    LORA_TARGET_MODULES = ["q_proj", "v_proj"]
+    LORA_R = 16         # Was 32 (half the size)
+    LORA_ALPHA = 32     # Was 64
+    LORA_DROPOUT = 0.1  # Was 0.15
 
     BATCH_SIZE = 1
     GRADIENT_ACCUMULATION = 16
 
     # ✅ safer LR
-    LEARNING_RATE = 5e-5
+    
 
-    NUM_EPOCHS = 8
+    NUM_EPOCHS = 15
     WARMUP_STEPS = 50
     MAX_LENGTH = 256
 
@@ -998,4 +999,5 @@ if __name__ == "__main__":
         print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
+
 
