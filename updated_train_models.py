@@ -80,6 +80,7 @@ class Config:
     EVAL_STEPS = 200
     LOGGING_STEPS = 25
 
+    MIN_VOLUME_ML = 0
     MAX_VOLUME_ML = 250
 
 # =============================================================================
@@ -732,6 +733,88 @@ class QwenTrainer:
         return model, processor
 
 
+class ImprovedVolumeExtractor:
+    """
+    Robustly extract a plausible volume (mL) from model text output.
+
+    Features:
+    - handles '23', '23.5', '23 mL', 'Volume: 23.5ml'
+    - rejects negatives / impossible values
+    - can try multiple patterns (strict first, then relaxed)
+    """
+
+    def __init__(self, min_vol=0.0, max_vol=250.0):
+        self.min_vol = float(min_vol)
+        self.max_vol = float(max_vol)
+
+        # Strict: number optionally followed by "ml" / "mL" / "milliliters"
+        self.strict_pat = re.compile(
+            r"(?<!\d)(\d{1,3}(?:\.\d{1,2})?)(?!\d)\s*(?:m\s*l|ml|milliliter|milliliters|mL)?",
+            flags=re.IGNORECASE
+        )
+
+        # Relaxed: any standalone number (fallback)
+        self.relaxed_pat = re.compile(r"(?<!\d)(\d+(?:\.\d+)?)(?!\d)")
+
+    def _clean(self, s: str) -> str:
+        if s is None:
+            return ""
+        s = str(s)
+        # remove common junk that causes random numbers
+        s = s.replace("\n", " ").replacestrip()
+        s = re.sub(r"\s+", " ", s).strip()
+        return s
+
+    def _validate(self, v: float) -> float | None:
+        if v is None:
+            return None
+        if v < self.min_vol or v > self.max_vol:
+            return None
+        return v
+
+    def extract_from_response(self, text: str, multiple_attempts: bool = True) -> float | None:
+        s = self._clean(text)
+        if not s:
+            return None
+
+        # Attempt 1 (strict): look for plausible volume mentions
+        strict_matches = self.strict_pat.findall(s)
+        if strict_matches:
+            # if multiple numbers exist, prefer the LAST one (often the answer)
+            for cand in reversed(strict_matches):
+                try:
+                    v = float(cand)
+                    v = self._validate(v)
+                    if v is not None:
+                        return v
+                except Exception:
+                    continue
+
+        if not multiple_attempts:
+            return None
+
+        # Attempt 2 (relaxed): any number, but pick best plausible
+        relaxed_matches = self.relaxed_pat.findall(s)
+        if not relaxed_matches:
+            return None
+
+        # Convert & filter
+        vals = []
+        for cand in relaxed_matches:
+            try:
+                v = float(cand)
+                v = self._validate(v)
+                if v is not None:
+                    vals.append(v)
+            except Exception:
+                continue
+
+        if not vals:
+            return None
+
+        # Prefer last valid number
+        return float(vals[-1])
+
 # Add this FIXED evaluator to replace the one in your code
 
 class ModelEvaluator:
@@ -997,6 +1080,7 @@ if __name__ == "__main__":
         print(f"\n❌ Error: {e}")
         import traceback
         traceback.print_exc()
+
 
 
 
